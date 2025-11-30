@@ -1,0 +1,121 @@
+.main-container-register {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    width: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px;
+}
+
+::selection{
+    background: #667eea;
+    color: white;
+}
+
+.container-register{
+    background: white;
+    max-width: 420px;
+    width: 100%;
+    padding: 48px 40px;
+    border-radius: 16px;
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+.container-register form .title{
+    font-size: 32px;
+    font-weight: 700;
+    margin: 0 0 32px 0;
+    color: #1e293b;
+    text-align: center;
+}
+
+.container-register form .input-box{
+    width: 100%;
+    margin-bottom: 24px;
+    position: relative;
+}
+
+.container-register form .input-box input{
+    width: 100%;
+    height: 48px;
+    padding: 12px 16px;
+    font-size: 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    outline: none;
+    transition: all 0.2s ease;
+    background: #f8fafc;
+}
+
+.container-register form .input-box select{
+    width: 100%;
+    height: 48px;
+    padding: 12px 16px;
+    font-size: 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    outline: none;
+    transition: all 0.2s ease;
+    background: #f8fafc;
+    cursor: pointer;
+}
+
+.container-register form .input-box input:focus,
+.container-register form .input-box select:focus{
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.container-register form .button{
+    margin: 32px 0 24px 0;
+}
+
+.container-register .input-box input[type="submit"]{
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.container-register .input-box input[type="submit"]:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+}
+
+.redirect-to-login {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 24px;
+    font-size: 14px;
+    color: #64748b;
+}
+
+.redirect-to-login p {
+    margin: 0;
+}
+
+.redirect-to-login .redirect-to-login-button {
+    background: none;
+    border: none;
+    color: #667eea;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.redirect-to-login .redirect-to-login-button:hover {
+    color: #764ba2;
+    text-decoration: underline;
+}

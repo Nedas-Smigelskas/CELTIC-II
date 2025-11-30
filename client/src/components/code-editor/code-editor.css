@@ -1,0 +1,178 @@
+.editor {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background: transparent;
+    padding: 20px;
+}
+
+.editor-container {
+    position: relative;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    width: 100%;
+    max-width: 1200px;
+    background: white;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+.editor-container.teacher-edit {
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1), 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+
+.editor-container.teacher-edit::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+    animation: pulse 1.5s ease-in-out infinite;
+    z-index: 10;
+}
+
+.teacher-edit-indicator {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    opacity: 0.95;
+    z-index: 10;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+.terminal {
+    width: 100%;
+    min-height: 200px;
+    max-height: 50vh;
+    height: 300px;
+    margin-top: 0;
+    background: #1e1e1e;
+    color: #d4d4d4;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
+    font-size: 14px;
+    padding: 16px;
+    overflow-y: auto;
+    box-sizing: border-box;
+    border-top: 1px solid #333;
+}
+
+.terminal::-webkit-scrollbar {
+    width: 8px;
+}
+
+.terminal::-webkit-scrollbar-track {
+    background: #1e1e1e;
+}
+
+.terminal::-webkit-scrollbar-thumb {
+    background: #4a4a4a;
+    border-radius: 4px;
+}
+
+.terminal::-webkit-scrollbar-thumb:hover {
+    background: #5a5a5a;
+}
+
+.editor-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding: 16px;
+    gap: 12px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+}
+
+.run-command-button {
+    margin: 0;
+}
+
+.stdin-input {
+    width: 100%;
+    min-height: 52px;
+    max-height: 160px;
+    resize: vertical;
+    margin-top: 8px;
+    padding: 12px;
+    box-sizing: border-box;
+    border-radius: 8px;
+    border: 2px solid #e2e8f0;
+    font-size: 14px;
+    font-family: 'Fira Code', monospace;
+    transition: border-color 0.2s ease;
+}
+
+.stdin-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.theme-debug {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    z-index: 5;
+    font-family: 'Fira Code', monospace;
+}
+
+/* Monaco keyword highlighting */
+.monaco-highlight-print {
+    color: #4CAF50 !important;
+    font-weight: 600 !important;
+}
+.monaco-highlight-def {
+    color: #C586C0 !important;
+    font-weight: 600 !important;
+}
+.monaco-highlight-return {
+    color: #DCDCAA !important;
+    font-weight: 600 !important;
+}
+.monaco-highlight-keyword {
+    color: #569CD6 !important;
+    font-weight: 600 !important;
+}
+.monaco-highlight-import {
+    color: #9CDCFE !important;
+    font-weight: 600 !important;
+}
+
+.terminal-line {
+    margin: 4px 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    line-height: 1.5;
+}
+
+.terminal-prompt {
+    color: #10b981;
+    user-select: none;
+    font-weight: 600;
+}
+
+.terminal-line.error {
+    color: #ff6b6b;
+    font-weight: 500;
+}

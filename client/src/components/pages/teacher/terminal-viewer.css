@@ -1,0 +1,97 @@
+.terminal-viewer-container {
+    margin: 20px;
+}
+
+.terminal-viewer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding: 0 20px;
+}
+
+.terminal-viewer-title {
+    font-size: 24px;
+    margin: 0;
+}
+
+.students-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.student-card-container {
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+    margin: 10px;
+    border-radius: 5px;
+}
+
+.card {
+    padding: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.card-button {
+    margin: 0;
+}
+
+.student-user {
+    color: black;
+    margin: 0;
+    font-size: 16px;
+}
+
+.student-workspace-view {
+    display: flex;
+    gap: 20px;
+    height: 100%;
+    padding: 10px;
+}
+
+.code-section,
+.terminal-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.code-section h3,
+.terminal-section h3 {
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+.terminal-output-container {
+    background-color: #1e1e1e;
+    color: #ffffff;
+    padding: 20px;
+    border-radius: 4px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    flex: 1;
+    overflow-y: auto;
+    min-height: 300px;
+}
+
+.terminal-entry {
+    margin-bottom: 15px;
+}
+
+.terminal-timestamp {
+    color: #666;
+    margin-right: 8px;
+}
+
+.terminal-text {
+    margin: 5px 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
