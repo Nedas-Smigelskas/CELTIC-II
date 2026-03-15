@@ -5,6 +5,7 @@ import "./terminal-viewer.css";
 import { useSocket } from "../../socketContext";
 import { Dialog } from "primereact/dialog";
 import { CodeEditor } from "../../code-editor/code-editor";
+import axios from "axios";
 
 interface TerminalOutput {
 	output: string;
@@ -19,6 +20,18 @@ interface StudentCode {
 	[studentId: string]: string;
 }
 
+interface StudentProgress {
+	studentId: string;
+	currentTaskIndex: number;
+	completedTasks: number;
+	totalPoints: number;
+}
+
+interface TaskSummary {
+	id: string;
+	title: string;
+}
+
 export const TerminalViewer = () => {
 	const { socket } = useSocket();
 	const [highlightedUser, setHighlightedUser] = useState("");
@@ -31,6 +44,9 @@ export const TerminalViewer = () => {
 	);
 	const [studentCode, setStudentCode] = useState<StudentCode>({});
 	const [isLoadingCode, setIsLoadingCode] = useState(false);
+	const [sessionMode, setSessionMode] = useState<string>("empty");
+	const [studentProgress, setStudentProgress] = useState<StudentProgress[]>([]);
+	const [taskList, setTaskList] = useState<TaskSummary[]>([]);
 	const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
 	useEffect(() => {
@@ -71,6 +87,7 @@ export const TerminalViewer = () => {
 
 		const studentListUpdateListener = (data: { students: string[] }) => {
 			setStudentList(data.students);
+			fetchSessionInfo(); // Refresh session info when student list updates
 		};
 
 		const codeUpdateListener = (data: {
@@ -97,6 +114,21 @@ export const TerminalViewer = () => {
 			}
 		};
 
+		const progressUpdateListener = (data: {
+			studentId: string;
+			currentTaskIndex: number;
+			completedTasks: number;
+			totalPoints: number;
+		}) => {
+			setStudentProgress((current) =>
+				current.map((sp) =>
+					sp.studentId === data.studentId
+						? { ...sp, currentTaskIndex: data.currentTaskIndex, completedTasks: data.completedTasks, totalPoints: data.totalPoints }
+						: sp
+				)
+			);
+		};
+
 		socket?.on("receiveMessage", messageListener);
 		socket?.on("teacherHelp", teacherHelpListener);
 		socket?.on("studentDone", studentDoneListener);
@@ -104,6 +136,7 @@ export const TerminalViewer = () => {
 		socket?.on("studentTerminalUpdate", terminalUpdateListener);
 		socket?.on("studentListUpdate", studentListUpdateListener);
 		socket?.on("codeUpdate", codeUpdateListener);
+		socket?.on("studentProgressUpdate", progressUpdateListener);
 
 		// Request the current student list when component mounts
 		if (socket) {
@@ -111,6 +144,7 @@ export const TerminalViewer = () => {
 				.getItem("sessionId")
 				?.replace(/^"(.*)"$/, "$1");
 			socket.emit("requestStudentList", { sessionId });
+			fetchSessionInfo(); // Fetch session info on mount
 		}
 
 		return () => {
@@ -121,6 +155,7 @@ export const TerminalViewer = () => {
 			socket?.off("studentTerminalUpdate", terminalUpdateListener);
 			socket?.off("studentListUpdate", studentListUpdateListener);
 			socket?.off("codeUpdate", codeUpdateListener);
+			socket?.off("studentProgressUpdate", progressUpdateListener);
 		};
 	}, [socket]);
 
@@ -138,8 +173,31 @@ export const TerminalViewer = () => {
 		setDoneUser("");
 	};
 
+	const fetchSessionInfo = async () => {
+		const sessionId = sessionStorage.getItem("sessionId");
+		if (!sessionId) return;
+
+		try {
+			const response = await axios.get(
+				`http://localhost:8000/api/session/${sessionId}`
+			);
+			const session = response.data.session;
+			
+			setSessionMode(session.mode || "empty");
+			if (session.studentProgress) {
+				setStudentProgress(session.studentProgress);
+			}
+			if (session.taskList) {
+				setTaskList(session.taskList);
+			}
+		} catch (error) {
+			console.error("Error fetching session info:", error);
+		}
+	};
+
 	const refreshStudentList = () => {
 		socket?.emit("requestStudentList");
+		fetchSessionInfo();
 	};
 
 	const openTerminal = (studentId: string) => {
@@ -150,6 +208,14 @@ export const TerminalViewer = () => {
 		if (loadingTimeoutRef.current) {
 			clearTimeout(loadingTimeoutRef.current);
 		}
+
+		// Clear the help highlight since teacher is now responding
+		if (highlightedUser === studentId) {
+			setHighlightedUser("");
+		}
+
+		// Notify the student that the teacher is viewing their code
+		socket?.emit("teacherViewingStudent", { studentId });
 
 		// If we already have cached code use it immediately and dont wait
 		if (studentCode[studentId] !== undefined) {
@@ -170,6 +236,13 @@ export const TerminalViewer = () => {
 		}, 1000);
 	};
 
+	const closeTerminal = () => {
+		if (selectedStudent) {
+			socket?.emit("teacherLeftStudent", { studentId: selectedStudent });
+		}
+		setShowTerminal(false);
+	};
+
 	const formatTimestamp = (timestamp: number) => {
 		return new Date(timestamp).toLocaleTimeString();
 	};
@@ -186,7 +259,11 @@ export const TerminalViewer = () => {
 				/>
 			</div>
 			<div className="students-container">
-				{studentList.map((studentId) => (
+				{studentList.map((studentId) => {
+					const progress = studentProgress.find(sp => sp.studentId === studentId);
+					const currentTask = progress && taskList[progress.currentTaskIndex];
+					
+					return (
 					<div
 						key={studentId}
 						className="student-card-container"
@@ -213,6 +290,19 @@ export const TerminalViewer = () => {
 						>
 							<Card unstyled={true}>
 								<h3 className="student-user">{studentId}</h3>
+								{sessionMode !== "empty" && progress && (
+									<div className="student-task-info">
+										<p className="task-progress-text">
+											Task {progress.currentTaskIndex + 1} of {taskList.length}
+										</p>
+										{currentTask && (
+											<p className="current-task-name">{currentTask.title}</p>
+										)}
+										<p className="tasks-completed">
+											✓ {progress.completedTasks} completed
+										</p>
+									</div>
+								)}
 								<div className="card-actions">
 									<i
 										className="pi pi-terminal"
@@ -222,7 +312,8 @@ export const TerminalViewer = () => {
 							</Card>
 						</Button>
 					</div>
-				))}
+					);
+				})}
 			</div>
 
 			<Dialog
@@ -230,7 +321,7 @@ export const TerminalViewer = () => {
 				visible={showTerminal}
 				style={{ width: "90vw", height: "90vh" }}
 				modal
-				onHide={() => setShowTerminal(false)}
+				onHide={closeTerminal}
 			>
 				{selectedStudent && (
 					<div className="student-workspace-view">

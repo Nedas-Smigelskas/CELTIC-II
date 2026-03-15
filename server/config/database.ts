@@ -13,11 +13,13 @@ export const connectDB = async () => {
   }
 
   try {
-    await mongoose.connect(uri);
-    Logger.info('Connected to MongoDB Atlas');
+    await mongoose.connect(uri, {
+      serverSelectionTimeoutMS: 5000, // Timeout after 5s
+    });
+    Logger.info('Connected to MongoDB successfully');
   } catch (error) {
     Logger.error('Error connecting to MongoDB', error);
-    throw error;
+    Logger.warn('Server will continue running without database. Some features may not work.');
   }
 };
 

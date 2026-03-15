@@ -1,6 +1,7 @@
 import express from "express";
 import Docker from "dockerode";
 import { PassThrough } from "stream";
+import { Logger } from "../../utils/logger";
 
 const router = express.Router();
 const docker = new Docker();
@@ -15,9 +16,9 @@ const cleanupContainer = async (containerId: string) => {
 			// Container might already be stopped
 		}
 		await container.remove();
-		console.log(`Container ${containerId} cleaned up successfully`);
+		Logger.info("Container cleaned up", { containerId });
 	} catch (err) {
-		console.error(`Error cleaning up container ${containerId}:`, err);
+		Logger.error("Error cleaning up container", { containerId, error: err });
 	}
 };
 
@@ -142,7 +143,7 @@ router.post("/api/docker-command", async (req, res) => {
 			});
 		}
 
-		// Execute the Python code
+		// Execute the python code
 		const exec = await container.exec({
 			Cmd: ["python", "-c", input],
 			AttachStdout: true,
@@ -151,22 +152,18 @@ router.post("/api/docker-command", async (req, res) => {
 			Tty: false,
 		});
 
-		// Start the exec with hijack/stdin enabled so we can write to stdin if provided
 		const stream = await exec.start({ hijack: true, stdin: true });
 
-		// If the client provided stdin (e.g. for input()) write it to the exec stream
 		const stdinData = req.body.stdin;
 		if (stdinData) {
 			try {
-				// Ensure newline so input() receives the line
+				// ensure a new line so that input goes on new line
 				(stream as any).write(String(stdinData) + "\n");
 			} catch (e) {
 				console.warn("Failed to write stdin to exec stream", e);
 			}
 		}
 
-		// The docker exec stream is multiplexed (header bytes indicate stdout/stderr) when Tty is false
-		// Demultiplex it into separate stdout/stderr streams to avoid raw control bytes appearing in output
 		const stdoutStream = new PassThrough();
 		const stderrStream = new PassThrough();
 
@@ -181,14 +178,10 @@ router.post("/api/docker-command", async (req, res) => {
 			error += chunk.toString();
 		});
 
-		// demux the docker stream into the two PassThrough streams
-		// docker.modem.demuxStream is available on the docker instance
-		// (it will split the multiplexed stream into stdout/stderr)
 		try {
-			// @ts-ignore - docker.modem typing may not include demuxStream
+
 			docker.modem.demuxStream(stream, stdoutStream, stderrStream);
 		} catch (demuxErr) {
-			// If demux fails, fall back to plain text collection
 			console.warn(
 				"demuxStream failed, falling back to raw stream handling",
 				demuxErr

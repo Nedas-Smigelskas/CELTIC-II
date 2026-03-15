@@ -18,20 +18,22 @@ export const CodeEditor = ({
 	language,
 	readOnly,
 	studentId,
+	onChange,
 }: CodeEditorProps) => {
 	const [inputValue, setInputValue] = useState(code || "");
 	const [terminalOutput, setTerminalOutput] = useState<
 		Array<{ timestamp: number; text: string; isError?: boolean }>
 	>([]);
 	const [stdinValue, setStdinValue] = useState("");
+	const [showStdinInput, setShowStdinInput] = useState(false);
 	const [teacherEdit, setTeacherEdit] = useState(false);
 	const { socket } = useSocket();
 	const terminalRef = useRef<HTMLDivElement>(null);
 
-	const currentUser = localStorage
+	const currentUser = sessionStorage
 		.getItem("username")
 		?.replace(/^"(.*)"$/, "$1");
-	const isTeacher = localStorage.getItem("permission") === "teacher";
+	const isTeacher = sessionStorage.getItem("permission") === "teacher";
 	const isViewingOtherStudent =
 		isTeacher && studentId && studentId !== currentUser;
 
@@ -39,11 +41,43 @@ export const CodeEditor = ({
 
 	const isInitialized = useRef(false);
 	const isSyncingFromSocket = useRef(false);
+	const lastAppliedCode = useRef<string>("");
+	const editorRef = useRef<any>(null);
+
+	useEffect(() => {
+		let secondFrame = 0;
+		const firstFrame = window.requestAnimationFrame(() => {
+			secondFrame = window.requestAnimationFrame(() => {
+				editorRef.current?.layout();
+			});
+		});
+
+		return () => {
+			window.cancelAnimationFrame(firstFrame);
+			if (secondFrame) {
+				window.cancelAnimationFrame(secondFrame);
+			}
+		};
+	}, [showStdinInput]);
+
+	useEffect(() => {
+		const handleWindowResize = () => {
+			window.requestAnimationFrame(() => {
+				editorRef.current?.layout();
+			});
+		};
+
+		window.addEventListener("resize", handleWindowResize);
+		return () => {
+			window.removeEventListener("resize", handleWindowResize);
+		};
+	}, []);
 
 	useEffect(() => {
 		if (code) {
 			isSyncingFromSocket.current = true;
 			setInputValue(code);
+			lastAppliedCode.current = code;
 			setTimeout(() => {
 				isSyncingFromSocket.current = false;
 				isInitialized.current = true;
@@ -52,19 +86,33 @@ export const CodeEditor = ({
 			isInitialized.current = true;
 		}
 	}, []);
-
 	useEffect(() => {
-		if (isInitialized.current && code !== undefined) {
-			isSyncingFromSocket.current = true;
-			setInputValue(code);
-			setTimeout(() => (isSyncingFromSocket.current = false), 50);
+		if (isInitialized.current && code !== undefined && code !== lastAppliedCode.current) {
+			const lengthDiff = Math.abs(code.length - inputValue.length);
+			
+			// Syncing logic for the coding editor
+			// To prevent resyncing for every single input only larger changes trigger resyncs
+			// Catches 3 length differences
+			// Catches code emptying
+			// Catches input emptying
+
+			if (lengthDiff > 3 || (code === "" && inputValue !== "") || (code !== "" && inputValue === "")) {
+				isSyncingFromSocket.current = true;
+				setInputValue(code);
+				lastAppliedCode.current = code;
+				setTimeout(() => {
+					isSyncingFromSocket.current = false;
+				}, 50);
+			} else if (code === inputValue) {
+				// Sync lastAppliedCode when code catches up to inputValue
+				lastAppliedCode.current = code;
+			}
 		}
-	}, [code]);
+	}, [code, inputValue]);
 
 	useEffect(() => {
 		if (!socket) return;
 
-		// Listen or code changes
 		const handleCodeUpdate = (data: {
 			studentId: string;
 			code: string;
@@ -129,7 +177,8 @@ export const CodeEditor = ({
 					setInputValue(data.code);
 					setTimeout(() => (isSyncingFromSocket.current = false), 50);
 				}
-				runCommand(data.input);
+				// Pass data.code directly to avoid stale closure on inputValue
+				runCommand(data.input, data.code);
 			}
 		};
 
@@ -205,8 +254,9 @@ export const CodeEditor = ({
 		if (!isInitialized.current || isSyncingFromSocket.current) {
 			return;
 		}
-
-		// Emit code changes
+		if (onChange) {
+			onChange(newCode);
+		}
 		socket?.emit("codeChange", {
 			studentId: effectiveStudentId,
 			code: newCode,
@@ -215,6 +265,8 @@ export const CodeEditor = ({
 	};
 
 	const handleEditorMount = (editor: any, monaco: any) => {
+		editorRef.current = editor;
+
 		monaco.editor.defineTheme("vscode-dark-python", {
 			base: "vs-dark",
 			inherit: true,
@@ -238,10 +290,14 @@ export const CodeEditor = ({
 		});
 
 		monaco.editor.setTheme("vscode-dark-python");
+		window.requestAnimationFrame(() => {
+			editor.layout();
+		});
 	};
 
-	const runCommand = async (stdin?: string) => {
-		if (!inputValue.trim()) {
+	const runCommand = async (stdin?: string, codeOverride?: string) => {
+		const codeToRun = codeOverride !== undefined ? codeOverride : inputValue;
+		if (!codeToRun.trim()) {
 			setTerminalOutput((prev) => [
 				...prev,
 				{
@@ -258,20 +314,21 @@ export const CodeEditor = ({
 		if (isViewingOtherStudent) {
 			socket?.emit("runForStudent", {
 				studentId: effectiveStudentId,
-				input: stdin !== undefined ? stdin : stdinValue,
-				code: inputValue,
+				// Only send stdin if teacher has the Input panel open
+				input: showStdinInput ? stdinValue : undefined,
+				code: codeToRun,
 			});
 			return;
 		}
 
 		try {
-			const containerId = localStorage
+			const containerId = sessionStorage
 				.getItem("containerId")
 				?.replace(/^"(.*)"$/, "$1");
 			const response = await axios.post(
 				"http://localhost:8000/api/docker-command",
 				{
-					input: inputValue,
+					input: codeToRun,
 					containerId,
 					stdin: stdin !== undefined ? stdin : stdinValue,
 				}
@@ -303,75 +360,106 @@ export const CodeEditor = ({
 					teacherEdit ? "teacher-edit" : ""
 				}`}
 			>
-				<Editor
-					height="400px"
-					language={language}
-					theme="vscode-dark-python"
-					value={inputValue}
-					onChange={(value) => handleInputChange(value || "")}
-					onMount={handleEditorMount}
-					options={{
-						automaticLayout: true,
-						readOnly: readOnly || false,
-						minimap: { enabled: false },
-						fontSize: 14,
-						fontFamily: "'Consolas', 'Courier New', monospace",
-						lineNumbers: "on",
-						renderLineHighlight: "all",
-						scrollBeyondLastLine: false,
-						wordWrap: "on",
-						wrappingIndent: "indent",
-						tabSize: 4,
-						insertSpaces: true,
-						autoIndent: "full",
-						formatOnPaste: true,
-						formatOnType: true,
-						folding: true,
-						foldingHighlight: true,
-						matchBrackets: "always",
-						cursorBlinking: "smooth",
-						cursorSmoothCaretAnimation: "on",
-						smoothScrolling: true,
-						contextmenu: true,
-						mouseWheelZoom: true,
-					}}
-				/>
-				{teacherEdit && (
-					<div className="teacher-edit-indicator">
-						Teacher is editing...
+				{/* Editor Header + Run Button */}
+				<div className="editor-header">
+					<div className="editor-header-left">
+						<Button
+							icon={showStdinInput ? "pi pi-chevron-up" : "pi pi-chevron-down"}
+							label="Input"
+							onClick={() => setShowStdinInput(!showStdinInput)}
+							className="p-button-text p-button-sm stdin-toggle-button"
+							tooltip="Toggle program input"
+						/>
 					</div>
-				)}
-				<div className="terminal" ref={terminalRef}>
-					{terminalOutput.map((output, index) => (
-						<div
-							key={`${output.timestamp}-${index}`}
-							className={`terminal-line ${
-								output.isError ? "error" : ""
-							}`}
-						>
-							<span className="terminal-prompt">{"> "}</span>
-							{output.text}
-						</div>
-					))}
+					<div className="editor-header-right">
+						<Button
+							icon="pi pi-play"
+							label="Run Code"
+							onClick={() => runCommand()}
+							className="p-button-success p-button-sm run-button"
+						/>
+					</div>
 				</div>
-				<div className="editor-actions">
-					<div style={{ flex: 1 }}>
-						<label htmlFor="stdin-input">
-							Program input (stdin):
-						</label>
+
+				{/* Stdin input */}
+				{showStdinInput && (
+					<div className="stdin-section">
 						<textarea
 							id="stdin-input"
 							value={stdinValue}
 							onChange={(e) => setStdinValue(e.target.value)}
 							className="stdin-input"
-							placeholder="Optional: input for input() calls"
+							placeholder="Enter input for input() calls (one per line)..."
 						/>
 					</div>
-					<Button
-						label="Run Command"
-						onClick={() => runCommand()}
-						className="run-command-button"
+				)}
+
+				{/* Monaco Editor */}
+				<div className="monaco-wrapper">
+					<Editor
+						height="100%"
+						language={language}
+						theme="vscode-dark-python"
+						value={inputValue}
+						onChange={(value) => handleInputChange(value || "")}
+						onMount={handleEditorMount}
+						options={{
+							automaticLayout: false,
+							readOnly: readOnly || false,
+							minimap: { enabled: false },
+							fontSize: 14,
+							fontFamily: "'Consolas', 'Courier New', monospace",
+							lineNumbers: "on",
+							renderLineHighlight: "all",
+							scrollBeyondLastLine: false,
+							wordWrap: "on",
+							wrappingIndent: "indent",
+							tabSize: 4,
+							insertSpaces: true,
+							autoIndent: "full",
+							formatOnPaste: true,
+							formatOnType: true,
+							folding: true,
+							foldingHighlight: true,
+							matchBrackets: "always",
+							cursorBlinking: "smooth",
+							cursorSmoothCaretAnimation: "on",
+							smoothScrolling: true,
+							contextmenu: true,
+							mouseWheelZoom: true,
+						}}
 					/>
+					{teacherEdit && (
+						<div className="teacher-edit-indicator">
+							Teacher is editing...
+						</div>
+					)}
+				</div>
+
+				{/* Terminal Output */}
+				<div className="terminal" ref={terminalRef}>
+					<div className="terminal-header">
+						<span className="terminal-title">Output</span>
+					</div>
+					<div className="terminal-content">
+						{terminalOutput.length === 0 ? (
+							<div className="terminal-empty">
+								Run your code to see output here...
+							</div>
+						) : (
+							terminalOutput.map((output, index) => (
+								<div
+									key={`${output.timestamp}-${index}`}
+									className={`terminal-line ${
+										output.isError ? "error" : ""
+									}`}
+								>
+									<span className="terminal-prompt">{"> "}</span>
+									{output.text}
+								</div>
+							))
+						)}
+					</div>
 				</div>
 			</div>
 		</div>

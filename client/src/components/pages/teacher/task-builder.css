@@ -1,0 +1,68 @@
+.task-builder-form {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+	padding: 1rem;
+}
+
+.field {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.field label {
+	font-weight: 600;
+	color: #495057;
+	font-size: 0.9rem;
+}
+
+.field-group {
+	display: grid;
+	grid-template-columns: 1fr 1fr 1fr;
+	gap: 1rem;
+}
+
+.test-cases-section {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.test-cases-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.test-cases-header label {
+	font-weight: 600;
+	color: #495057;
+	font-size: 0.9rem;
+}
+
+.test-case-card {
+	border: 1px solid #dee2e6;
+	border-radius: 6px;
+	padding: 1rem;
+	background: #f8f9fa;
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.test-case-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.test-case-title {
+	flex: 1;
+	font-weight: 500;
+}
+
+.w-full {
+	width: 100%;
+}

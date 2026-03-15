@@ -54,12 +54,14 @@
     display: flex;
     gap: 20px;
     height: 100%;
+    min-height: 0;
     padding: 10px;
 }
 
 .code-section,
 .terminal-section {
     flex: 1;
+    min-height: 0;
     display: flex;
     flex-direction: column;
 }
@@ -94,4 +96,31 @@
     margin: 5px 0;
     white-space: pre-wrap;
     word-wrap: break-word;
+}
+
+.student-task-info {
+    margin-top: 8px;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+.task-progress-text {
+    margin: 4px 0;
+    font-weight: 600;
+    color: #4f46e5;
+}
+
+.current-task-name {
+    margin: 4px 0;
+    color: #333;
+    font-weight: 500;
+    font-size: 11px;
+}
+
+.tasks-completed {
+    margin: 4px 0;
+    color: #059669;
+    font-weight: 600;
 }

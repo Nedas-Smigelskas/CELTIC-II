@@ -11,7 +11,7 @@ export const LoginPage = () => {
 	const [sessionCode, setSessionCode] = useState("");
 	const [message, setMessage] = useState("");
 	const navigate = useNavigate();
-    
+
 	const handleTeacherLogin = (e: React.FormEvent) => {
 		e.preventDefault();
 		axios
@@ -21,12 +21,12 @@ export const LoginPage = () => {
 			})
 			.then((response) => {
 				if (response.status === 200) {
-					localStorage.setItem("token", response.data.accessToken);
-					localStorage.setItem(
-						"username",
-						JSON.stringify(response.data.user.name)
-					);
-					localStorage.setItem("permission", "teacher");
+				sessionStorage.setItem("token", response.data.accessToken);
+				sessionStorage.setItem(
+					"username",
+					JSON.stringify(response.data.user.name)
+				);
+				sessionStorage.setItem("permission", "teacher");
 					setMessage("Login successful");
 					setTimeout(() => {
 						navigate("/teacher");
@@ -56,13 +56,13 @@ export const LoginPage = () => {
 			.then((response) => {
 				if (response.status === 200) {
 					// Store student info for session
-					localStorage.setItem(
+					sessionStorage.setItem(
 						"username",
 						JSON.stringify(studentName)
 					);
-					localStorage.setItem("permission", "student");
-					localStorage.setItem("sessionId", sessionCode);
-					localStorage.setItem(
+					sessionStorage.setItem("permission", "student");
+					sessionStorage.setItem("sessionId", sessionCode);
+					sessionStorage.setItem(
 						"student-sessionInfo",
 						JSON.stringify(response.data.session)
 					);

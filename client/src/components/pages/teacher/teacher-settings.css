@@ -1,0 +1,212 @@
+.settings-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    padding: 20px;
+}
+
+.settings-header {
+    max-width: 900px;
+    margin: 0 auto 30px;
+}
+
+.settings-header h1 {
+    font-size: 2.5rem;
+    color: #1e293b;
+    margin: 20px 0;
+}
+
+.settings-content {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.settings-card {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+.settings-card h2 {
+    font-size: 1.5rem;
+    color: #1e293b;
+    margin: 0 0 10px 0;
+    display: flex;
+    align-items: center;
+}
+
+.settings-card .p-divider {
+    margin: 20px 0;
+}
+
+/* Profile Information */
+.profile-info {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #64748b;
+}
+
+.info-value {
+    color: #1e293b;
+    font-weight: 500;
+}
+
+/* Form Fields */
+.field {
+    margin-bottom: 20px;
+}
+
+.field label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.field .p-inputtext,
+.field .p-password {
+    width: 100%;
+}
+
+.input-with-button {
+    display: flex;
+    gap: 10px;
+}
+
+.input-with-button .p-inputtext {
+    flex: 1;
+}
+
+.input-with-button .p-button {
+    white-space: nowrap;
+}
+
+/* Session History */
+.session-history {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.session-item {
+    padding: 15px;
+    background: #f8fafc;
+    border-radius: 8px;
+    border-left: 4px solid #3b82f6;
+}
+
+.session-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.session-info strong {
+    color: #1e293b;
+    font-size: 1.1rem;
+}
+
+.session-task {
+    color: #64748b;
+    font-size: 0.95rem;
+}
+
+.session-meta {
+    color: #94a3b8;
+    font-size: 0.85rem;
+}
+
+.no-data {
+    text-align: center;
+    color: #94a3b8;
+    padding: 20px;
+    font-style: italic;
+}
+
+/* Danger Zone */
+.danger-card {
+    border: 2px solid #fee2e2;
+    background: #fef2f2;
+}
+
+.danger-card h2 {
+    color: #dc2626;
+}
+
+.danger-text {
+    color: #991b1b;
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+/* Dialogs */
+.dialog-content {
+    padding: 10px 0;
+}
+
+.dialog-content .field {
+    margin-bottom: 20px;
+}
+
+.dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.delete-warning {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.delete-warning-text {
+    color: #991b1b;
+    text-align: center;
+    margin-bottom: 20px;
+    line-height: 1.6;
+    font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .settings-container {
+        padding: 10px;
+    }
+
+    .settings-header h1 {
+        font-size: 2rem;
+    }
+
+    .settings-card {
+        padding: 20px;
+    }
+
+    .input-with-button {
+        flex-direction: column;
+    }
+
+    .input-with-button .p-button {
+        width: 100%;
+    }
+
+    .info-row {
+        flex-direction: column;
+        gap: 5px;
+    }
+}

@@ -1,0 +1,90 @@
+.manager-panel {
+	padding: 1rem;
+}
+
+.panel-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 1rem;
+}
+
+.panel-description {
+	color: #6c757d;
+	margin-bottom: 1rem;
+	font-size: 0.95rem;
+}
+
+.description-text {
+	color: #6c757d;
+	font-size: 0.9rem;
+}
+
+.task-table,
+.template-table {
+	margin-top: 1rem;
+}
+
+.action-buttons {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+}
+
+.info-message {
+	padding: 1rem;
+	background: #cfe2ff;
+	border: 1px solid #9ec5fe;
+	border-radius: 4px;
+	color: #084298;
+	margin-bottom: 1rem;
+}
+
+.template-form {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+	padding: 1rem;
+}
+
+.field {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.field label {
+	font-weight: 600;
+	color: #495057;
+	font-size: 0.9rem;
+}
+
+.field-hint {
+	color: #6c757d;
+	font-style: italic;
+	font-size: 0.85rem;
+}
+
+.w-full {
+	width: 100%;
+}
+
+.p-chip-success {
+	background-color: #d1e7dd;
+	color: #0a3622;
+}
+
+.p-chip-warning {
+	background-color: #fff3cd;
+	color: #664d03;
+}
+
+.p-chip-danger {
+	background-color: #f8d7da;
+	color: #58151c;
+}
+
+.p-chip-info {
+	background-color: #cfe2ff;
+	color: #084298;
+}
